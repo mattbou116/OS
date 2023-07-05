@@ -1,0 +1,4 @@
+my_touch file1.txt
+my_touch file2.txt
+my_mkdir dir1
+my_ls

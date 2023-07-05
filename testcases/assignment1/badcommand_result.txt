@@ -1,0 +1,9 @@
+Shell version 1.2 Created January 2023
+
+Unknown Command
+Bad command: Too many tokens
+Bad command: File not found
+Bad command: my_mkdir
+Bad command: my_mkdir
+Bad command: my_cd
+Bye!

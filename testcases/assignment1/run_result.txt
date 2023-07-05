@@ -1,0 +1,9 @@
+Shell version 1.2 Created January 2023
+
+good
+10
+20 bob alice toto xyz
+Bad command: Too many tokens
+20 bob alice toto xyz
+abc def lili
+Bye!
