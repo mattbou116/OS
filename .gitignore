@@ -1,5 +1,5 @@
-$OS/doc/pdfs
-$OS/src/*.o
+doc/pdfs
+src/*.o
 # my own quick tests
-$OS/test 
+test 
 
