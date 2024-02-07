@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# TODO : look at this configure_compilation thing
+
 function configure_compilation {
     rm mysh
     cd $OS/src
@@ -13,6 +15,9 @@ function configure_compilation {
 
     cd $OS/env
 }
+
+# mv mysh $OS/testcases/assignment1
+# cd $OS/testcases/assignment1
 
 echo "============================== A3 TESTS ================================"
 

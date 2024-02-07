@@ -1,6 +1,6 @@
 set x 10
 print x
-echo Matt-loves-math
+echo matt-loves-math
 set x 20 bob alice toto xyz
 print x
 set x 12345 20 bob alice toto xyz

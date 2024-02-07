@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+mv mysh $OS/testcases/assignment2
+cd $OS/testcases/assignment2
 
 echo "============================== A2 TESTS ================================"
 

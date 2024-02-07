@@ -1,4 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+cd $OS/testcases/assignment1
+
+echo "============================== A1 TESTS ================================"
 
 if [[ $1 == "set" || $1 == "all" ]]; then
 
@@ -54,12 +58,32 @@ if [[ $1 == "echo" || $1 == "all" ]]; then
     fi
 fi
 
+if [[ $1 == "run" || $1 == "all" ]]; then
+
+    echo "------------------------------ RUN TEST ---------------------------------"
+
+    ./mysh < $OS/testcases/assignment1/run.txt > $OS/testcases/assignment1/out/run_out.txt
+    result=$(diff <(sed -e '$a\' $OS/testcases/assignment1/run_result.txt) <(sed -e '$a\' $OS/testcases/assignment1/out/run_out.txt))
+
+    if [ $? -eq 0 ]; then
+        echo "Test Passed!"
+    else
+        if [[ $2 == "debug" ]]; then
+            echo "$result"
+        fi
+
+        echo "Test Failed :(("
+    fi
+fi
+
 if [[ $1 == "ls" || $1 == "all" ]]; then
 
     echo "------------------------------- LS TEST ---------------------------------"
 
     ./mysh < $OS/testcases/assignment1/ls.txt > $OS/testcases/assignment1/out/ls_out.txt
     result=$(diff <(sed -e '$a\' $OS/testcases/assignment1/ls_result.txt) <(sed -e '$a\' $OS/testcases/assignment1/out/ls_out.txt))
+
+    rm -r toto 
 
     if [ $? -eq 0 ]; then
         echo "Test Passed!"
@@ -88,6 +112,8 @@ if [[ $1 == "mkdir" || $1 == "all" ]]; then
 
         echo "Test Failed :(("
     fi
+
+    rm -r test
 fi
 
 if [[ $1 == "badcommand" || $1 == "all" ]]; then
@@ -162,20 +188,3 @@ if [[ $1 == "blankline" || $1 == "all" ]]; then
     fi
 fi
 
-if [[ $1 == "run" || $1 == "all" ]]; then
-
-    echo "------------------------------ RUN TEST ---------------------------------"
-
-    ./mysh < $OS/testcases/assignment1/run.txt > $OS/testcases/assignment1/out/run_out.txt
-    result=$(diff <(sed -e '$a\' $OS/testcases/assignment1/run_result.txt) <(sed -e '$a\' $OS/testcases/assignment1/out/run_out.txt))
-
-    if [ $? -eq 0 ]; then
-        echo "Test Passed!"
-    else
-        if [[ $2 == "debug" ]]; then
-            echo "$result"
-        fi
-
-        echo "Test Failed :(("
-    fi
-fi

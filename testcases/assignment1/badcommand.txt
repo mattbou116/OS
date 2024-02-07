@@ -1,5 +1,7 @@
 cool
 Do you like to learn about computer systems?
+print x 2
+set x 12345 20 bob alice toto xyz
 run notExistFile
 my_mkdir $noExistVar
 set dirname not a good name

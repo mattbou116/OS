@@ -1,5 +1,12 @@
-doc/pdfs
-src/*.o
-# my own quick tests
-test 
+doc/pdfs/
+doc/notes/cool-implementations.md
+doc/notes/a1.md
 
+testcases/assignment1/out/
+testcases/assignment2/out/
+testcases/assignment3/out/
+
+src/*.o
+src/mysh
+
+env/bin/

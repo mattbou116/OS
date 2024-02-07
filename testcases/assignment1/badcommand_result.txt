@@ -1,6 +1,8 @@
-Shell version 1.2 Created January 2023
+Shell version 1.2 Created January 2024
 
 Unknown Command
+Unknown Command
+Bad command: Incorrect amount of tokens (req. 2)
 Bad command: Too many tokens
 Bad command: File not found
 Bad command: my_mkdir
