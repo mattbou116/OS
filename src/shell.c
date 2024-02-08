@@ -20,14 +20,14 @@ int main(int argc, char* argv[]) {
     // determine if input is batch or interactive
     if (isatty(STDIN_FILENO)) {
         // interactive
-        char user_input[MAX_LINE];
+        char user_input[LINE_SIZE];
         interactive(prompt, user_input);
     } else {
         // batch
-        char user_input[MAX_LINE];
+        char user_input[LINE_SIZE];
         batch(user_input);
 
-        memset(user_input, '\0', MAX_LINE * sizeof(char));
+        memset(user_input, '\0', LINE_SIZE * sizeof(char));
         // resetting stdin and stdout streams to terminal
         freopen("/dev/tty", "r", stdin);
         freopen("/dev/tty", "w", stdout);
@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
 void interactive(char prompt, char* user_input) {
     while (1) {
         printf("%c ", prompt);
-        fgets(user_input, MAX_LINE, stdin);
+        fgets(user_input, LINE_SIZE, stdin);
         int rc = cmd_interpreter(user_input);
         if (rc != 0) exit(rc);
     }
@@ -49,7 +49,7 @@ void interactive(char prompt, char* user_input) {
 
 void batch(char* user_input) {
     while (!feof(stdin)) {
-        fgets(user_input, MAX_LINE, stdin);
+        fgets(user_input, LINE_SIZE, stdin);
         int rc = cmd_interpreter(user_input);
         if (rc != 0) exit(rc);
     }

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 // #include <errno.h>
 #include "macros.h"
 #include "interpreter.h"
@@ -16,8 +17,9 @@ typedef struct {
 
 // tokenize user input
 token_array* init_token_array();
+void reset_token_array(token_array* tr);
 void free_token_array(token_array* tr);
-int tokenize(const char* line, token_array* tokens);
+int tokenize(const char* line, token_array* tokens, int* idx, bool* is_end);
 
 // commands/errors
 int help();
@@ -65,7 +67,7 @@ int quit() {
 }
 
 int set(token_array* tokens, const char* var) {
-    char val[MAX_LINE] = {'\0'};
+    char val[LINE_SIZE] = {'\0'};
 
     for (int i=2; i<tokens->len && i<7; i++) {
         strcat(val, tokens->arr[i]);
@@ -97,11 +99,11 @@ int run(const char* script) {
         return bad_command("File not found");
     }
 
-    char command[MAX_LINE];
+    char command[LINE_SIZE];
     int rc;
 
     while(!feof(fp)) {
-        fgets(command, MAX_LINE, fp);
+        fgets(command, LINE_SIZE, fp);
         rc = cmd_interpreter(command);
         if (rc != 0) return rc;
     }
@@ -185,46 +187,56 @@ int bad_command(const char* rc) {
 }
 
 int cmd_interpreter(const char* line) {
-    token_array* tokens = init_token_array();
-    int rc = tokenize(line, tokens);
-    if (rc != 0) return rc;
-    // print_tokens(tokens); // debug
+    int rc = 0;
+    token_array* tokens;
+    int* line_idx; *line_idx = 0;
+    bool* is_end; *is_end = false;
 
-    if (tokens->len <= 0) {
-        rc = unknown();
-    } else if (strcmp(tokens->arr[0], "help") == 0) {
-        rc = help();                 
-    } else if (strcmp(tokens->arr[0], "quit") == 0) {
-        rc = quit();
-    } else if (strcmp(tokens->arr[0], "set") == 0) {
-        if (tokens->len > 7) rc = bad_command("Too many tokens");
-        else rc = set(tokens, tokens->arr[1]);
-    } else if (strcmp(tokens->arr[0], "print") == 0) {
-        if (tokens->len != 2) rc = bad_command("Incorrect amount of tokens (req. 2)");
-        else rc = print(tokens->arr[1]);
-    } else if (strcmp(tokens->arr[0], "run") == 0) {
-        if (tokens->len != 2) rc = bad_command("Incorrect amount of tokens (req. 2)");
-        else rc = run(tokens->arr[1]);
-    } else if (strcmp(tokens->arr[0], "echo") == 0) {
-        if (tokens->len != 2) rc = bad_command("Incorrect amount of tokens (req. 2)");
-        else rc = echo(tokens->arr[1]);
-    } else if (strcmp(tokens->arr[0], "my_ls") == 0) {
-        if (tokens->len != 1) rc = bad_command("Incorrect amount of tokens (req. 1)");
-        else rc = my_ls();
-    } else if (strcmp(tokens->arr[0], "my_mkdir") == 0) {
-        if (tokens->len != 2) rc = bad_command("Incorrect amount of tokens (req. 2)");
-        else rc = my_mkdir(tokens->arr[1]);
-    } else if (strcmp(tokens->arr[0], "my_touch") == 0) {
-        if (tokens->len != 2) rc = bad_command("Incorrect amount of tokens (req. 2)");
-        else rc = my_touch(tokens->arr[1]);
-    } else if (strcmp(tokens->arr[0], "my_cd") == 0) {
-        if (tokens->len != 2) rc = bad_command("Incorrect amount of tokens (req. 2)");
-        else rc = my_cd(tokens->arr[1]);
-    } else {
-        rc = unknown();
+    // (lots of inits/frees) --> most 50
+    while (!(*is_end)) {
+        tokens = init_token_array();
+        rc = tokenize(line, tokens, line_idx, is_end);
+        
+        if (rc != 0) {
+            break;
+        } else if (tokens->len <= 0) {
+            rc = unknown();
+        } else if (strcmp(tokens->arr[0], "help") == 0) {
+            rc = help();                 
+        } else if (strcmp(tokens->arr[0], "quit") == 0) {
+            rc = quit();
+        } else if (strcmp(tokens->arr[0], "set") == 0) {
+            if (tokens->len > 7) rc = bad_command("Too many tokens");
+            else rc = set(tokens, tokens->arr[1]);
+        } else if (strcmp(tokens->arr[0], "print") == 0) {
+            if (tokens->len != 2) rc = bad_command("Incorrect amount of tokens (req. 2)");
+            else rc = print(tokens->arr[1]);
+        } else if (strcmp(tokens->arr[0], "run") == 0) {
+            if (tokens->len != 2) rc = bad_command("Incorrect amount of tokens (req. 2)");
+            else rc = run(tokens->arr[1]);
+        } else if (strcmp(tokens->arr[0], "echo") == 0) {
+            if (tokens->len != 2) rc = bad_command("Incorrect amount of tokens (req. 2)");
+            else rc = echo(tokens->arr[1]);
+        } else if (strcmp(tokens->arr[0], "my_ls") == 0) {
+            if (tokens->len != 1) rc = bad_command("Incorrect amount of tokens (req. 1)");
+            else rc = my_ls();
+        } else if (strcmp(tokens->arr[0], "my_mkdir") == 0) {
+            if (tokens->len != 2) rc = bad_command("Incorrect amount of tokens (req. 2)");
+            else rc = my_mkdir(tokens->arr[1]);
+        } else if (strcmp(tokens->arr[0], "my_touch") == 0) {
+            if (tokens->len != 2) rc = bad_command("Incorrect amount of tokens (req. 2)");
+            else rc = my_touch(tokens->arr[1]);
+        } else if (strcmp(tokens->arr[0], "my_cd") == 0) {
+            if (tokens->len != 2) rc = bad_command("Incorrect amount of tokens (req. 2)");
+            else rc = my_cd(tokens->arr[1]);
+        } else {
+            rc = unknown();
+        }
+
+        free_token_array(tokens);
+        if (rc != 0) return rc;
     }
 
-    free_token_array(tokens);
     return rc;
 }
 
@@ -235,9 +247,16 @@ token_array* init_token_array() {
     tr->len = 0;
     tr->arr = malloc(MAX_ARGS * sizeof(char*));
 
-    for (int i=0; i<MAX_ARGS; i++) 
+    for (int i=0; i<MAX_ARGS; i++)
         tr->arr[i] = malloc(TOKEN_SIZE * sizeof(char)); 
+
     return tr;
+}
+
+// TODO: try to change this to memset?
+void reset_token_array(token_array* tr) {
+    for (int i=0; i<MAX_ARGS; i++)
+        tr->arr[i] = NULL;
 }
 
 void free_token_array(token_array* tr) {
@@ -260,12 +279,18 @@ int is_end_line(const char* line, int* line_idx) {
         || line[*line_idx] == '\0';
 }
 
+int is_end_token(const char* line, int* idx) {
+    return line[*idx] == ' '
+        || line[*idx] == ';';
+}
+
 void skip_whitespace(const char* line, int* line_idx) {
-    while ((*line_idx)<MAX_LINE && line[*line_idx]==' ' && !is_end_line(line, line_idx))
+    while ((*line_idx)<LINE_SIZE && line[*line_idx]==' ' && !is_end_line(line, line_idx))
         (*line_idx)++;
 }
 
 int next_token(const char* line, token_array* tokens, int* line_idx) {
+    // need a null to terminate
     if (tokens->len >= MAX_ARGS-1) {
         print_error(INVALID_ARG_AMT);
         return INVALID_ARG_AMT;
@@ -274,12 +299,12 @@ int next_token(const char* line, token_array* tokens, int* line_idx) {
     int tkn_idx = 0;
 
     // read next token into token array
-    while (line[*line_idx]!=' ' && !is_end_line(line, line_idx)) {
+    while (!is_end_token(line, line_idx) && !is_end_line(line, line_idx)) {
         if (tkn_idx >= TOKEN_SIZE) {
             print_error(INVALID_TOKEN_SIZE);
             return INVALID_TOKEN_SIZE;
         }
-        // thinks this copies the char into the new string?
+
         tokens->arr[tokens->len][tkn_idx] = line[*line_idx]; 
         (*line_idx)++;
         tkn_idx++;
@@ -292,17 +317,20 @@ int next_token(const char* line, token_array* tokens, int* line_idx) {
 } 
 
 // tokenize input string into array
-int tokenize(const char* line, token_array* tokens) {
-    int line_idx = 0;
-    int rc;
+int tokenize(const char* line, token_array* tokens, int* line_idx, bool* is_end) {
+    int rc = 0;
 
-    while (line[line_idx]!=';' && !is_end_line(line, &line_idx)) {
-        skip_whitespace(line, &line_idx);
-        rc = next_token(line, tokens, &line_idx);
+    while (!is_end_line(line, line_idx)) {
+        if (line[*line_idx]==';') {
+            (*line_idx)++;
+            return rc;
+        }
+
+        skip_whitespace(line, line_idx);
+        rc = next_token(line, tokens, line_idx);
         if (rc != 0) return rc;
     }
 
-    // add a sentinel
-    tokens->arr[tokens->len] = NULL;
+    *is_end = true;
     return 0;
 }

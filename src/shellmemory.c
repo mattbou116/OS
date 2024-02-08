@@ -1,6 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h> // temp
+// #include <stdio.h> // temp
 #include "macros.h"
 #include "rc.h"
 

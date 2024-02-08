@@ -168,6 +168,8 @@ if [[ $1 == "oneline_2" || $1 == "all" ]]; then
 
         echo "Test Failed :(("
     fi
+
+    rm -r testdir
 fi
 
 if [[ $1 == "blankline" || $1 == "all" ]]; then
@@ -187,4 +189,3 @@ if [[ $1 == "blankline" || $1 == "all" ]]; then
         echo "Test Failed :(("
     fi
 fi
-
